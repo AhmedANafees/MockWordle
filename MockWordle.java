@@ -1,3 +1,4 @@
+package MockWordle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -7,27 +8,27 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Scanner;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
 
 /**
  *
  * @author nafea8846
  */
-public class MockWordle implements Runnable, ActionListener {
+public final class MockWordle implements Runnable {
 
     // Class Variables
     ArrayList<String> dictionary;
-    int wordLength = 5;
     JPanel mainPanel;
-    JPanel buttonPanel;
+    JPanel gridPanel;
     JButton[][] grid;
-    JButton submitButton;
-    JTextField inputTextField;
     JLabel titleLabel;
     String randomWord;
+    String wordGuessed = "";
+    String[] cars = {"Volvo", "BMW", "Ford", "Mazda"};
+    String letterString = "abcdefghijklmnopqrstuvwxyz";
     int counter = 0;
+    int location = 0;
+    int wordLength = 5;
+    int lastInst = wordLength;
     Font Title = new Font("arial", Font.BOLD, 70);
     Font Large = new Font("arial", Font.BOLD, 50);
     Font medium = new Font("arial", Font.BOLD, 30);
@@ -40,47 +41,88 @@ public class MockWordle implements Runnable, ActionListener {
         // Makes the X button close the program
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // makes the windows 800 pixel wide by 600 pixels tall
-        frame.setSize(800, 400);
+        frame.setSize(440, 610);
         // shows the window
         frame.setVisible(true);
+        frame.setFocusable(true);
+        frame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyChar() == ('\b')) {
+                    location = location - 1;
+                    while (location < 0) {
+                        location++;
+                    }
+                    letterRemover(counter, location);
+                    wordGuessed = wordGuessed.substring(0, location);
+                } else if (e.getKeyCode() == 10) {
+                    if (wordGuessed.length() == wordLength) {
+                        wordChecker(wordGuessed);
+                        frame.setFocusable(true);
+                        location = 0;
+                    } else {
+                        if (wordGuessed.length() > wordLength) {
+                            JOptionPane.showMessageDialog(mainPanel, "this is not a " + wordLength + " letter word");
+                        }
+                    }
+
+                } else if (letterString.contains(String.valueOf(e.getKeyChar()))) {
+                    String letterEntered = String.valueOf(e.getKeyChar());
+                    wordGuessed = wordGuessed + letterEntered;
+                    if (wordGuessed.length() > wordLength) {
+                        wordGuessed = wordGuessed.substring(0, (wordLength));
+                    } else {
+                        System.out.println(wordGuessed);
+                        letterPlacer(letterEntered, counter, location);
+                        location++;
+                    }
+
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+        });
 
         mainPanel = new JPanel();
         mainPanel.setLayout(null);
 
-        buttonPanel = new JPanel();
-        buttonPanel.setBounds(0, 205, 800, 160);
-        buttonPanel.setLayout(new GridLayout(wordLength, wordLength));
+        gridPanel = new JPanel();
+        gridPanel.setBounds(10, 80, 400, 480);
+        gridPanel.setLayout(new GridLayout(wordLength + 1, wordLength));
 
         titleLabel = new JLabel("WORDLE");
         titleLabel.setFont(Title);
-        titleLabel.setBounds(225, 0, 350, 70);
+        titleLabel.setBounds(60, 0, 320, 70);
 
-        submitButton = new JButton("Submit");
-        submitButton.setFont(medium);
-        submitButton.setBounds(455, 100, 150, 52);
-        submitButton.addActionListener(this);
-        submitButton.setActionCommand("Submit");
-
-        inputTextField = new JTextField();
-        inputTextField.setFont(Large);
-        inputTextField.setBounds(195, 100, 250, 52);
-        inputTextField.setDocument(new JTextFieldLimit(wordLength));
-
-        grid = new JButton[wordLength][wordLength];
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid.length; j++) {
+        grid = new JButton[wordLength + 1][wordLength];
+        for (int i = 0; i < wordLength + 1; i++) {
+            for (int j = 0; j < wordLength; j++) {
                 grid[i][j] = new JButton();
+                grid[i][j].setFocusable(false);
                 grid[i][j].setBackground(Color.LIGHT_GRAY);
                 grid[i][j].setForeground(Color.BLACK);
                 grid[i][j].setFont(Large);
-                buttonPanel.add(grid[i][j]);
+                gridPanel.add(grid[i][j]);
             }
         }
+
         mainPanel.add(titleLabel);
-        mainPanel.add(submitButton);
-        mainPanel.add(inputTextField);
-        mainPanel.add(buttonPanel);
+        mainPanel.add(gridPanel);
         frame.add(mainPanel);
+    }
+
+    public void letterPlacer(String letter, int row, int location) {
+        grid[row][location].setText(letter);
+    }
+
+    public void letterRemover(int row, int column) {
+        grid[row][column].setText("");
     }
 
     //method loads dictionary of 5 letterChar words
@@ -97,27 +139,6 @@ public class MockWordle implements Runnable, ActionListener {
         randomWordGenerator();
     }
 
-    public class JTextFieldLimit extends PlainDocument {
-
-        private final int limit;
-
-        JTextFieldLimit(int limit) {
-            super();
-            this.limit = limit;
-        }
-
-        @Override
-        public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
-            if (str == null) {
-                return;
-            }
-
-            if ((getLength() + str.length()) <= limit) {
-                super.insertString(offset, str, attr);
-            }
-        }
-    }
-
     //Method generates random word from loaded dictionary
     public void randomWordGenerator() {
         int lowest = 1;
@@ -129,6 +150,7 @@ public class MockWordle implements Runnable, ActionListener {
 
     //Method checks word entered
     public void wordChecker(String word) {
+
         //checks if word is in dictionary
         if (dictionary.contains(word)) {
             //check if guessed word is the same as the random word
@@ -142,28 +164,32 @@ public class MockWordle implements Runnable, ActionListener {
                     String letterString = String.valueOf(letterChar);
                     if (randomWord.contains(letterString)) {
                         int location = randomWord.indexOf(letterChar);
-                        if (i == location) {
-                            colorChanger(letterString, i, 1);
-                        } else {
-                            colorChanger(letterString, i, 2);
+                        if ((word.indexOf(letterString) != word.lastIndexOf(letterString) != (randomWord.indexOf(letterString) != randomWord.lastIndexOf(letterString)))) {
+                            lastInst = word.lastIndexOf(letterString);
+                        }
+                        if (i != lastInst) {
+                            if (i == location) {
+                                colorChanger(letterString, i, 1);
+                            } else {
+                                colorChanger(letterString, i, 2);
+                            }
                         }
                     } else {
                         colorChanger(letterString, i, 0);
                     }
                 }
+                if (counter < wordLength) {
+                    counter++;
+                } else if (counter == wordLength && !word.equals(randomWord)) {
+                    JOptionPane.showMessageDialog(mainPanel, "You lose, the word was: " + randomWord);
+                    resetGame();
+                }
             }
-            counter++;
-            if(counter == wordLength){
-                resetGame();
-                if(!word.equals(randomWord)){
-                 JOptionPane.showMessageDialog(mainPanel, "Y");
-                }
-                }
+            wordGuessed = "";
         } else {
             JOptionPane.showMessageDialog(mainPanel, "This word is not in the dictonary, try another word");
-            inputTextField.setText("");
-            inputTextField.requestFocusInWindow();
         }
+
     }
 
     //method changes color of buttons
@@ -188,36 +214,24 @@ public class MockWordle implements Runnable, ActionListener {
 
     //method resets game
     public void resetGame() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < wordLength + 1; i++) {
             for (int j = 0; j < wordLength; j++) {
                 grid[i][j].setBackground(Color.LIGHT_GRAY);
                 grid[i][j].setText("");
             }
         }
         counter = 0;
-        inputTextField.setText("");
+        wordGuessed = "";
         randomWordGenerator();
-    }
-
-    // method called when a button is pressed
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // get the command from the action
-        String command = e.getActionCommand();
-        if (command.equals("Submit")) {
-            String guessedWord = inputTextField.getText();
-            guessedWord = guessedWord.toLowerCase();
-            wordChecker(guessedWord);
-            inputTextField.setText("");
-        }
-
     }
 
     // Main method to start our program
     public static void main(String[] args) throws IOException {
         // Creates an instance of our program
         MockWordle gui = new MockWordle();
+
         // Lets the computer know to start it in the event thread
         SwingUtilities.invokeLater(gui);
     }
+
 }
