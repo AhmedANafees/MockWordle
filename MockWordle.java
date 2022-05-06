@@ -21,17 +21,21 @@ public final class MockWordle implements Runnable {
     JPanel gridPanel;
     JButton[][] grid;
     JLabel titleLabel;
+    boolean wrongWord = true;
     String randomWord;
     String wordGuessed = "";
-    String[] cars = {"Volvo", "BMW", "Ford", "Mazda"};
     String letterString = "abcdefghijklmnopqrstuvwxyz";
     int counter = 0;
     int location = 0;
     int wordLength = 5;
     int lastInst = wordLength;
+    int numOfGames = 1;
+    int gameStreak = 0;
+    int[] winCounter = {0,0,0,0,0,0,0};
     Font Title = new Font("arial", Font.BOLD, 70);
     Font Large = new Font("arial", Font.BOLD, 50);
     Font medium = new Font("arial", Font.BOLD, 30);
+    MockWordleStatsPage game = new MockWordleStatsPage();
 
     // Method to assemble our GUI
     @Override
@@ -59,7 +63,13 @@ public final class MockWordle implements Runnable {
                     if (wordGuessed.length() == wordLength) {
                         wordChecker(wordGuessed);
                         frame.setFocusable(true);
-                        location = 0;
+                        if(wrongWord){
+                            location = 0;
+                        }
+                        else{
+                            location = 5;
+                            wrongWord = true;
+                        }
                     } else {
                         if (wordGuessed.length() > wordLength) {
                             JOptionPane.showMessageDialog(mainPanel, "this is not a " + wordLength + " letter word");
@@ -111,7 +121,6 @@ public final class MockWordle implements Runnable {
                 gridPanel.add(grid[i][j]);
             }
         }
-
         mainPanel.add(titleLabel);
         mainPanel.add(gridPanel);
         frame.add(mainPanel);
@@ -156,6 +165,11 @@ public final class MockWordle implements Runnable {
             //check if guessed word is the same as the random word
             if (word.equals(randomWord)) {
                 JOptionPane.showMessageDialog(mainPanel, "You Win!");
+                gameStreak++;
+                winCounter[0]++;
+                winCounter[counter+1]++;
+                game.boxLength(winCounter, gameStreak, numOfGames);
+                game.frame.setVisible(true);
                 resetGame();
             } else {
                 //check if and where letters in gussed word are in random word
@@ -182,12 +196,17 @@ public final class MockWordle implements Runnable {
                     counter++;
                 } else if (counter == wordLength && !word.equals(randomWord)) {
                     JOptionPane.showMessageDialog(mainPanel, "You lose, the word was: " + randomWord);
+                    gameStreak = 0;
+                    game.boxLength(winCounter, gameStreak, numOfGames);
+                    game.frame.setVisible(true);
                     resetGame();
                 }
             }
             wordGuessed = "";
         } else {
+            location = wordLength;
             JOptionPane.showMessageDialog(mainPanel, "This word is not in the dictonary, try another word");
+            wrongWord = false;
         }
 
     }
@@ -220,6 +239,7 @@ public final class MockWordle implements Runnable {
                 grid[i][j].setText("");
             }
         }
+        numOfGames++;
         counter = 0;
         wordGuessed = "";
         randomWordGenerator();
