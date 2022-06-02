@@ -1,6 +1,4 @@
 package MockWordle;
-
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -14,8 +12,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.util.Arrays;
-import java.util.HashSet;
 import javax.swing.Timer;
 
 /**
@@ -43,16 +39,16 @@ public class MockWordleStatsPage extends JComponent implements ActionListener {
 
     // YOUR GAME VARIABLES WOULD GO HERE
     Font titleFont = new Font("arial", Font.BOLD, 70);
-    Font largeFont = new Font("arial", Font.BOLD, 50);
     Font mediumFont = new Font("arial", Font.BOLD, 30);
-    int winStreak = 0;
-    int gamesPlayed = 0;
-    double gamesWonDouble = 0;
-    int gamesWonInt = 0;
-    double[] numOfTriesDouble = {0, 0, 0, 0, 0, 0};
-    int[] numOfTries = {0,0,0,0,0,0};
+    
     // GAME VARIABLES END HERE    
-
+    int gamesPlayed = 0;
+    int winStreak = 0;
+    int winCounterInt = 0;
+    double winCounterDouble = 0;
+    int[] turnCounterInt = new int[]{0,0,0,0,0,0};
+    double[] turnCounterDouble = new double[]{0,0,0,0,0,0};
+    
     // creates a windows to show my game
         JFrame frame = new JFrame(title);
         
@@ -106,45 +102,41 @@ public class MockWordleStatsPage extends JComponent implements ActionListener {
         g.setFont(mediumFont);
         g.drawString(String.valueOf(gamesPlayed), 45, 125);
         g.drawString("Plays",30, 155);
-        g.drawString(String.valueOf(gamesWonDouble), 150, 125);
+        g.drawString(String.valueOf(winCounterInt), 150, 125);
         g.drawString("Win%", 135 ,155);
         g.drawString(String.valueOf(winStreak), 285, 125);
         g.drawString("Win Streak", 230, 155);
         g.drawString("1", 20, 205);
-        g.fillRect(40, 180, numOfTries[0], 25);
+        g.fillRect(40, 180, turnCounterInt[0], 25);
         g.drawString("2", 20, 240);
-        g.fillRect(40, 215, numOfTries[1], 25);
+        g.fillRect(40, 215,turnCounterInt[1], 25);
         g.drawString("3", 20, 275);
-        g.fillRect(40, 250, numOfTries[2], 25);
+        g.fillRect(40, 250,turnCounterInt[2], 25);
         g.drawString("4", 20, 310);
-        g.fillRect(40, 285, numOfTries[2], 25);
+        g.fillRect(40, 285,turnCounterInt[3], 25);
         g.drawString("5", 20, 345);
-        g.fillRect(40, 320, numOfTries[4], 25);
+        g.fillRect(40, 320,turnCounterInt[4], 25);
         g.drawString("6", 20, 380);
-        g.fillRect(40, 355, numOfTries[5], 25);
+        g.fillRect(40, 355, turnCounterInt[5], 25);
         // GAME DRAWING ENDS HERE
     }
-    public void boxLength(int[] winCounter, int gameStreak, int numOfGames){
-        gamesPlayed = numOfGames;
-        winStreak = gameStreak;
-        gamesWonInt = winCounter[0];
-        gamesWonDouble = winCounter[0];
-        for (int i = 0; i < 6; i++) {
-             numOfTriesDouble[i] = winCounter[i+1]/gamesWonDouble;
-             System.out.println(numOfTriesDouble[i]);
-             numOfTriesDouble[i] = numOfTriesDouble[i]*340;
-             System.out.println(numOfTriesDouble[i]);
-             numOfTries[i] = (int)Math.round(numOfTriesDouble[i]);
+    public void boxLength(int[] statsCounter){
+        gamesPlayed = statsCounter[0];
+        winCounterDouble = statsCounter[1];
+        winStreak = statsCounter[2];
+        for (int i = 0; i < turnCounterDouble.length; i++) {
+            turnCounterDouble[i] = statsCounter[i+3];
+            turnCounterDouble[i] = turnCounterDouble[i]/winCounterDouble*340;
+            turnCounterInt[i] = (int)turnCounterDouble[i];
         }
-        gamesWonDouble =(gamesWonDouble/gamesPlayed)*100;
-
+        winCounterDouble = winCounterDouble/gamesPlayed*100;
+        winCounterInt = (int)winCounterDouble;
     }
 
     // This method is used to do any pre-setup you might need to do
     // This is run before the game loop begins!
     public void setup() {
         // Any of your pre setup before the loop starts should go here
-
     }
 
     // The main game loop
