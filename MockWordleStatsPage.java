@@ -45,8 +45,8 @@ public class MockWordleStatsPage extends JComponent implements ActionListener {
     int gamesPlayed = 0;
     int winStreak = 0;
     int winCounterInt = 0;
-    double winCounterDouble = 0;
     int[] turnCounterInt = new int[]{0,0,0,0,0,0};
+    double winCounterDouble = 0;
     double[] turnCounterDouble = new double[]{0,0,0,0,0,0};
     
     // creates a windows to show my game
@@ -124,11 +124,13 @@ public class MockWordleStatsPage extends JComponent implements ActionListener {
         gamesPlayed = statsCounter[0];
         winCounterDouble = statsCounter[1];
         winStreak = statsCounter[2];
+        //for each trun get what percentage of the wins it has and make that the percentage of the rectange that is filled
         for (int i = 0; i < turnCounterDouble.length; i++) {
             turnCounterDouble[i] = statsCounter[i+3];
             turnCounterDouble[i] = turnCounterDouble[i]/winCounterDouble*340;
             turnCounterInt[i] = (int)turnCounterDouble[i];
         }
+        //calculate win percentage
         winCounterDouble = winCounterDouble/gamesPlayed*100;
         winCounterInt = (int)winCounterDouble;
     }
